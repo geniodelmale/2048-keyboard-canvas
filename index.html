@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>2048 · Keyboard edition</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <script>
+    const token = new URLSearchParams(location.search).get("token");
+    const stylesheet = document.createElement("link");
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = "/style.css?token=" + encodeURIComponent(token);
+    document.head.append(stylesheet);
+    const app = document.createElement("script");
+    app.type = "module";
+    app.src = "/app.mjs?token=" + encodeURIComponent(token);
+    document.head.append(app);
+  </script>
+</head>
+<body>
+  <main>
+    <header>
+      <div><p class="eyebrow">KEYBOARD EDITION</p><h1>2048<span>.</span></h1></div>
+      <div class="scores">
+        <div class="score-card"><span>PUNTI</span><strong id="score">0</strong></div>
+        <div class="score-card"><span>RECORD</span><strong id="best">0</strong></div>
+      </div>
+    </header>
+    <p class="intro">Unisci i numeri. Raggiungi <strong>2048</strong>.</p>
+    <div class="toolbar">
+      <button id="undo" disabled title="Annulla l'ultima mossa (U o Ctrl+Z)">&#8630; Undo <kbd>U</kbd></button>
+      <button id="new" class="primary">Nuova partita <kbd>N</kbd></button>
+    </div>
+    <div class="board-shell">
+      <div id="board" class="board" role="group" tabindex="0"
+        aria-label="Griglia 2048, 4 righe e 4 colonne. Usa frecce o WASD per muovere le tessere."
+        aria-describedby="help"></div>
+      <div id="game-over" class="game-over" hidden>
+        <strong>GAME OVER!</strong>
+        <span>Premi U per annullare<br>o N per ricominciare.</span>
+      </div>
+    </div>
+    <div class="game-info"><span id="status" role="status" aria-live="polite">Caricamento partita...</span><span id="moves">0 mosse</span></div>
+    <p id="error" role="alert" hidden></p>
+    <div class="dpad" aria-label="Controlli direzionali">
+      <button data-direction="up" aria-label="Muovi in alto">&#8593;</button>
+      <button data-direction="left" aria-label="Muovi a sinistra">&#8592;</button>
+      <button data-direction="down" aria-label="Muovi in basso">&#8595;</button>
+      <button data-direction="right" aria-label="Muovi a destra">&#8594;</button>
+    </div>
+    <footer id="help">
+      <p><kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8595;</kbd> <kbd>&#8594;</kbd> oppure <strong>W A S D</strong> per muovere</p>
+      <p><kbd>U</kbd> o <kbd>Ctrl/Cmd + Z</kbd> per annullare una mossa</p>
+      <p class="hint">Partita salvata in questa sessione. Clicca la griglia per dare il focus alla tastiera.</p>
+    </footer>
+    <dialog id="restart-dialog" aria-labelledby="dialog-title">
+      <h2 id="dialog-title">Ricominciare?</h2>
+      <p>La partita corrente verra sostituita. Il record resta.</p>
+      <form method="dialog">
+        <button value="cancel" autofocus>Continua a giocare</button>
+        <button value="restart" class="primary">Nuova partita</button>
+      </form>
+    </dialog>
+  </main>
+</body>
+</html>
