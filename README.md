@@ -10,6 +10,8 @@ Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3
 4. Choose the personal/user scope when prompted.
 5. After installation, ask: **Open the keyboard-2048 canvas**.
 
+## Introduction
+
 A personal extension with no external dependencies, featuring a 4 x 4 board,
 2048 rules, keyboard shortcuts, on-screen controls, and swipe gestures.
 Reaching 2048 does not end the game.
