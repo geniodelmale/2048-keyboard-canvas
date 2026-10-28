@@ -4,7 +4,10 @@
 
 Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3d9feba8b53e5cceb7e86570de26d5):
 
-1. Open the command palette in GitHub Copilot Desktop.
+1. Open Customize in GitHub Copilot Desktop
+
+   ![Customize option in the GitHub Copilot Desktop sidebar](docs/images/side-menu.png)
+
 2. Choose **Install extension from gist...**.
 3. Paste `https://gist.github.com/geniodelmale/3f3d9feba8b53e5cceb7e86570de26d5`.
 4. Choose the personal/user scope when prompted.
