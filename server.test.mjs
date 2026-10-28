@@ -46,7 +46,7 @@ test("new game clears Undo and keeps record", async t => {
 test("invalid saved data is reported without being overwritten", async t => {
     const { file } = await fixture(t);
     await writeFile(file, '{"invalid":true}');
-    await assert.rejects(createGameStore(file), /Salvataggio/);
+    await assert.rejects(createGameStore(file), /Invalid 2048 save/);
     assert.equal(await readFile(file, "utf8"), '{"invalid":true}');
 });
 
@@ -63,7 +63,7 @@ test("failed persistence leaves live state unchanged and command queue recovers"
 
 test("commands are serialized and invalid commands do not poison the queue", async t => {
     const { store } = await fixture(t);
-    await assert.rejects(store.execute("invalid"), /Comando/);
+    await assert.rejects(store.execute("invalid"), /Invalid command/);
     const before = store.snapshot();
     await Promise.all([store.execute("move", movable(before)), store.execute("undo")]);
     assert.deepEqual(store.snapshot().board, before.board);
@@ -77,10 +77,20 @@ test("loopback server serves UI and authenticated actions with live panel update
     const url = new URL(server.url);
     const endpoint = path => `${url.origin}${path}${url.search}`;
     assert.equal((await fetch(url.origin)).status, 403);
-    assert.equal((await fetch(server.url)).status, 200);
+    const page = await fetch(server.url);
+    assert.equal(page.status, 200);
+    const html = await page.text();
+    assert.match(html, /<html lang="en">/);
+    assert.match(html, /aria-label="Move up"/);
+    assert.match(html, /New game/);
+    assert.match(html, /GAME OVER!/);
     for (const path of ["/app.mjs", "/style.css"]) {
         assert.equal((await fetch(endpoint(path))).status, 200);
     }
+    const script = await (await fetch(endpoint("/app.mjs"))).text();
+    assert.match(script, /Intl\.NumberFormat\("en-US"\)/);
+    const css = await (await fetch(endpoint("/style.css"))).text();
+    assert.match(css, /content: "NEW"/);
     assert.equal((await fetch(endpoint("/missing"))).status, 404);
     const before = await (await fetch(endpoint("/state"))).json();
     assert.deepEqual(before, store.snapshot());
@@ -97,7 +107,9 @@ test("loopback server serves UI and authenticated actions with live panel update
         headers: { "Content-Type": "application/json", Origin: origin },
         body: JSON.stringify(body),
     });
-    assert.equal((await send({ action: "move", direction: "diagonal" })).status, 400);
+    const invalid = await send({ action: "move", direction: "diagonal" });
+    assert.equal(invalid.status, 400);
+    assert.deepEqual(await invalid.json(), { error: "Invalid command." });
     assert.equal((await send(null)).status, 400);
     assert.equal((await send({ action: "new" }, "https://example.invalid")).status, 403);
     const moved = await (await send({ action: "move", direction: movable(before) })).json();

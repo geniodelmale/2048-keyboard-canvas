@@ -7,7 +7,7 @@ let storePromise;
 let session;
 function store() {
     if (!session?.workspacePath) {
-        throw new CanvasError("workspace_unavailable", "Cartella della sessione non disponibile.");
+        throw new CanvasError("workspace_unavailable", "Session workspace is unavailable.");
     }
     if (!storePromise) {
         storePromise = createGameStore(join(session.workspacePath, "2048-save.json"))
@@ -21,18 +21,18 @@ session = await joinSession({
     canvases: [createCanvas({
         id: "keyboard-2048",
         displayName: "2048",
-        description: "Gioca a 2048 con frecce o WASD, annulla l'ultima mossa e riprendi la partita salvata.",
+        description: "Play 2048 with arrow keys or WASD, undo the last move, and resume your saved game.",
         inputSchema: emptyInput,
         actions: [
             {
                 name: "get_state",
-                description: "Leggi griglia, punteggio e disponibilita di Undo.",
+                description: "Read the board, score, and Undo availability.",
                 inputSchema: emptyInput,
                 handler: async () => (await store()).snapshot(),
             },
             {
                 name: "move",
-                description: "Muovi le tessere in una direzione.",
+                description: "Move the tiles in a direction.",
                 inputSchema: {
                     type: "object",
                     properties: { direction: { type: "string", enum: ["left", "right", "up", "down"] } },
@@ -43,13 +43,13 @@ session = await joinSession({
             },
             {
                 name: "undo",
-                description: "Annulla solo l'ultima mossa valida, ripristinando anche punteggio e tessera generata.",
+                description: "Undo only the last valid move, restoring the score and removing the spawned tile.",
                 inputSchema: emptyInput,
                 handler: async () => (await store()).execute("undo"),
             },
             {
                 name: "new_game",
-                description: "Inizia una nuova partita, conservando il record della sessione.",
+                description: "Start a new game, keeping the session's best score.",
                 inputSchema: emptyInput,
                 handler: async () => (await store()).execute("new"),
             },

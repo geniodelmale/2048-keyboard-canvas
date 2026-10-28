@@ -4,7 +4,7 @@ const board = document.querySelector("#board");
 const errorBox = document.querySelector("#error");
 const undoButton = document.querySelector("#undo");
 const dialog = document.querySelector("#restart-dialog");
-const number = new Intl.NumberFormat("it-IT");
+const number = new Intl.NumberFormat("en-US");
 let state;
 let pending = Promise.resolve();
 let connected = false;
@@ -30,14 +30,14 @@ function render(next) {
         if (spawned) cell.classList.add("spawned");
         cell.dataset.level = value ? Math.min(11, Math.log2(value)) : 0;
         cell.textContent = value || "";
-        cell.setAttribute("aria-label", `Riga ${Math.floor(index / 4) + 1}, colonna ${index % 4 + 1}: ${value || "vuota"}${spawned ? " (nuova tessera)" : ""}`);
+        cell.setAttribute("aria-label", `Row ${Math.floor(index / 4) + 1}, column ${index % 4 + 1}: ${value || "empty"}${spawned ? " (new tile)" : ""}`);
     });
     document.querySelector("#score").textContent = number.format(next.score);
     document.querySelector("#best").textContent = number.format(next.best);
-    document.querySelector("#moves").textContent = `${next.moves} ${next.moves === 1 ? "mossa" : "mosse"}`;
+    document.querySelector("#moves").textContent = `${number.format(next.moves)} ${next.moves === 1 ? "move" : "moves"}`;
     document.querySelector("#status").textContent = next.gameOver
-        ? "Nessuna mossa. Undo o nuova partita."
-        : next.won ? "2048 raggiunto! Puoi continuare." : "La prossima mossa e tua.";
+        ? "No moves left. Undo or start a new game."
+        : next.won ? "2048 reached! You can keep playing." : "Your move.";
     document.querySelector("#game-over").hidden = !next.gameOver;
     undoButton.disabled = !next.canUndo;
     state = next;
@@ -51,13 +51,13 @@ function command(action, direction) {
             body: JSON.stringify({ action, direction }),
         });
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error || `Errore HTTP ${response.status}`);
+        if (!response.ok) throw new Error(result.error || `HTTP error ${response.status}`);
         storageError = false;
         if (connected) errorBox.hidden = true;
         render(result);
     }).catch(error => {
         storageError = true;
-        showError(`Mossa non confermata: ${error.message}`);
+        showError(`Move not confirmed: ${error.message}`);
     });
     return pending;
 }
@@ -125,7 +125,7 @@ board.addEventListener("pointerup", event => {
 const events = new EventSource(endpoint("/events"));
 events.addEventListener("message", event => {
     try { render(JSON.parse(event.data)); }
-    catch (error) { showError(`Stato del gioco non valido: ${error.message}`); }
+    catch (error) { showError(`Invalid game state: ${error.message}`); }
 });
 events.addEventListener("open", () => {
     connected = true;
@@ -133,7 +133,7 @@ events.addEventListener("open", () => {
 });
 events.addEventListener("error", () => {
     connected = false;
-    showError("Connessione interrotta. Riconnessione automatica in corso; la partita resta salvata.");
+    showError("Connection lost. Reconnecting automatically; your game is still saved.");
 });
 window.addEventListener("pagehide", () => events.close());
 board.focus({ preventScroll: true });

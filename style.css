@@ -89,7 +89,7 @@ kbd { display: inline-block; font: 11px Consolas, "Courier New", Courier, monosp
 .tile.large { font-size: clamp(14px, 5vw, 26px); }
 .tile.changed { animation: pop 150ms ease-out; }
 .tile.spawned { position: relative; background: var(--cp-highlight); color: var(--cp-text); outline: 3px solid var(--cp-accent); outline-offset: -3px; animation: spawn-pop 360ms ease-out; }
-.tile.spawned::after { content: "NUOVA"; position: absolute; top: 4px; right: 4px; padding: 2px 3px; border-radius: 4px; background: var(--cp-accent); color: var(--cp-accent-fg); font-size: clamp(7px, 2.4cqw, 10px); font-weight: 700; line-height: 1; pointer-events: none; }
+.tile.spawned::after { content: "NEW"; position: absolute; top: 4px; right: 4px; padding: 2px 3px; border-radius: 4px; background: var(--cp-accent); color: var(--cp-accent-fg); font-size: clamp(7px, 2.4cqw, 10px); font-weight: 700; line-height: 1; pointer-events: none; }
 @keyframes pop { from { transform: scale(.88); } to { transform: scale(1); } }
 @keyframes spawn-pop { from { transform: scale(.8); } to { transform: scale(1); } }
 .game-info { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 16px 0; min-height: 24px; }

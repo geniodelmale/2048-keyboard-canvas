@@ -19,7 +19,7 @@ test("all four directions use the correct merge order", () => {
     const vertical = [2, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0];
     assert.deepEqual(slide(vertical, "up").board.filter((_, i) => i % 4 === 0), [4, 8, 0, 0]);
     assert.deepEqual(slide(vertical, "down").board.filter((_, i) => i % 4 === 0), [0, 0, 4, 8]);
-    assert.throws(() => slide(board, "diagonal"), /Direzione/);
+    assert.throws(() => slide(board, "diagonal"), /Invalid direction/);
 });
 
 test("slides preserve mass and do not mutate their inputs", () => {
@@ -112,7 +112,7 @@ test("saved state including Undo round-trips and malformed saves are rejected", 
     for (const invalid of [null, {}, { ...state, board: [2] }, { ...state, score: -1 },
         { ...state, best: -1 }, { ...state, previous: {} },
         { ...state, board: Array(16).fill(3) }, { ...state, version: 2 }]) {
-        assert.throws(() => validateSave(invalid), /Salvataggio/);
+        assert.throws(() => validateSave(invalid), /Invalid 2048 save/);
     }
 });
 
@@ -148,6 +148,6 @@ test("spawn metadata persists without rejecting saves made before this feature",
     assert.equal(viewState(validateSave(legacy)).spawnedIndex, null);
     assert.equal(viewState(undo(legacy)).spawnedIndex, null);
     for (const index of [-1, 16, 1.5, "0", 1]) {
-        assert.throws(() => validateSave({ ...after, spawnedIndex: index }), /Salvataggio/);
+        assert.throws(() => validateSave({ ...after, spawnedIndex: index }), /Invalid 2048 save/);
     }
 });

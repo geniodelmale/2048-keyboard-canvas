@@ -45,7 +45,7 @@ export async function createGameStore(savePath) {
                 if (action === "move" && DIRECTIONS.includes(direction)) next = move(state, direction);
                 else if (action === "undo") next = undo(state);
                 else if (action === "new") next = newGame(state.best);
-                else throw new Error("Comando non valido.");
+                else throw new Error("Invalid command.");
                 if (next !== state) {
                     await persist(next);
                     state = next;
@@ -76,12 +76,12 @@ export async function startGameServer(store) {
         response.setHeader("X-Content-Type-Options", "nosniff");
         response.setHeader("Referrer-Policy", "no-referrer");
         if (request.headers.host !== new URL(origin).host) {
-            json(response, 403, { error: "Host non consentito." });
+            json(response, 403, { error: "Host not allowed." });
             return;
         }
         const url = new URL(request.url, origin);
         if (url.searchParams.get("token") !== token) {
-            json(response, 403, { error: "Accesso non autorizzato." });
+            json(response, 403, { error: "Unauthorized access." });
             return;
         }
         try {
@@ -103,32 +103,32 @@ export async function startGameServer(store) {
             } else if (request.method === "POST" && url.pathname === "/command") {
                 if ((request.headers.origin && request.headers.origin !== origin)
                     || request.headers["content-type"] !== "application/json") {
-                    json(response, 403, { error: "Origine o contenuto non consentiti." });
+                    json(response, 403, { error: "Origin or content type not allowed." });
                     return;
                 }
                 let body = "";
                 for await (const chunk of request) {
                     body += chunk;
                     if (body.length > 1024) {
-                        json(response, 413, { error: "Richiesta troppo grande." });
+                        json(response, 413, { error: "Request too large." });
                         return;
                     }
                 }
                 let command;
                 try { command = JSON.parse(body); }
-                catch { json(response, 400, { error: "JSON non valido." }); return; }
+                catch { json(response, 400, { error: "Invalid JSON." }); return; }
                 if (!command || !["move", "undo", "new"].includes(command.action)
                     || (command.action === "move" && !DIRECTIONS.includes(command.direction))) {
-                    json(response, 400, { error: "Comando non valido." });
+                    json(response, 400, { error: "Invalid command." });
                     return;
                 }
                 json(response, 200, await store.execute(command.action, command.direction));
             } else {
-                json(response, 404, { error: "Risorsa non trovata." });
+                json(response, 404, { error: "Resource not found." });
             }
         } catch (error) {
             process.stderr.write(`[2048] ${error.stack ?? error}\n`);
-            if (!response.headersSent) json(response, 500, { error: "Errore del gioco o del salvataggio. Riprova." });
+            if (!response.headersSent) json(response, 500, { error: "Game or save error. Please try again." });
             else response.end();
         }
     });

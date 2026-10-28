@@ -18,7 +18,7 @@ export function mergeLine(line) {
 }
 
 export function slide(board, direction) {
-    if (!DIRECTIONS.includes(direction)) throw new Error("Direzione non valida.");
+    if (!DIRECTIONS.includes(direction)) throw new Error("Invalid direction.");
     const next = [...board];
     let score = 0;
     for (let row = 0; row < 4; row++) {
@@ -98,7 +98,7 @@ export function validateSave(value) {
             || (Number.isInteger(value.spawnedIndex) && value.spawnedIndex >= 0
                 && value.spawnedIndex < 16 && [2, 4].includes(value.board[value.spawnedIndex])))
         || !(value.previous === null || validSnapshot(value.previous))) {
-        throw new Error("Salvataggio 2048 non valido. Conserva o rinomina il file prima di riprovare.");
+        throw new Error("Invalid 2048 save. Back up or rename the file before trying again.");
     }
     return value;
 }
