@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A personal extension with no external dependencies, featuring a 4 x 4 board,
+A Canvas extension for GitHub Copilot Desktop with no external dependencies, featuring a 4 x 4 board,
 2048 rules, keyboard shortcuts, on-screen controls, and swipe gestures.
 Reaching 2048 does not end the game.
 
