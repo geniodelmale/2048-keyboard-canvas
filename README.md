@@ -1,5 +1,15 @@
 # 2048 Canvas for GitHub Copilot Desktop
 
+## Quick install from Gist
+
+Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3d9feba8b53e5cceb7e86570de26d5):
+
+1. Open the command palette in GitHub Copilot Desktop.
+2. Choose **Install extension from gist...**.
+3. Paste `https://gist.github.com/geniodelmale/3f3d9feba8b53e5cceb7e86570de26d5`.
+4. Choose the personal/user scope when prompted.
+5. After installation, ask: **Open the keyboard-2048 canvas**.
+
 A personal extension with no external dependencies, featuring a 4 x 4 board,
 2048 rules, keyboard shortcuts, on-screen controls, and swipe gestures.
 Reaching 2048 does not end the game.
