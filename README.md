@@ -41,7 +41,7 @@ Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3
 
 ## Manual Installation
 
-Copy this folder (without \docs) to `%USERPROFILE%\.copilot\extensions\keyboard-2048`
+Copy this folder (without `\docs`) to `%USERPROFILE%\.copilot\extensions\keyboard-2048`
 (or the `extensions` folder under `COPILOT_HOME`, if configured).
 The entry point must remain `extension.mjs`.
 
