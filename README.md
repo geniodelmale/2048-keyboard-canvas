@@ -39,17 +39,6 @@ Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3
 
 5. After installation, in the Chat ask: **Open the keyboard-2048 canvas** or simply **Open 2048**.
 
-## Manual Installation
-
-Copy this folder (without `\docs`) to `%USERPROFILE%\.copilot\extensions\keyboard-2048`
-(or the `extensions` folder under `COPILOT_HOME`, if configured).
-The entry point must remain `extension.mjs`.
-
-Reload extensions from the runtime, if available, or open a new chat in
-Copilot Desktop. Ask: **Open the keyboard-2048 canvas** or simply **Open 2048**.
-No `npm install`, external server, or additional account is required:
-Copilot resolves `@github/copilot-sdk/extension` automatically.
-
 ## Controls
 
 | Control | Action |
@@ -66,6 +55,17 @@ Undo has one level: it restores the exact board before the move, removes
 the newly spawned random tile, and restores the score and move count.
 A move with no effect does not consume Undo. You can also undo after
 the game ends; the best score is not lowered. A new game clears Undo.
+
+## Manual Installation
+
+Copy this folder (without `\docs`) to `%USERPROFILE%\.copilot\extensions\keyboard-2048`
+(or the `extensions` folder under `COPILOT_HOME`, if configured).
+The entry point must remain `extension.mjs`.
+
+Reload extensions from the runtime, if available, or open a new chat in
+Copilot Desktop. Ask: **Open the keyboard-2048 canvas** or simply **Open 2048**.
+No `npm install`, external server, or additional account is required:
+Copilot resolves `@github/copilot-sdk/extension` automatically.
 
 ## Saving and architecture
 
