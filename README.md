@@ -1,6 +1,6 @@
 # 2048 Canvas for GitHub Copilot Desktop
 
-## Quick install from Gist
+## Quick install from URL
 
 Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3d9feba8b53e5cceb7e86570de26d5):
 
@@ -17,7 +17,7 @@ Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3
 
    ![Gist URL installation dialog in GitHub Copilot Desktop](docs/images/gist.png)
 
-5. After installation, ask: **Open the keyboard-2048 canvas**.
+5. After installation, in the Chat ask: **Open the keyboard-2048 canvas**.
 
 ## Introduction
 
@@ -37,7 +37,7 @@ Older saves remain compatible; the indicator will appear after the first
 new move. With reduced motion enabled, the border and badge remain visible
 without animation.
 
-## Installation
+## Manual Installation
 
 Copy this folder to `%USERPROFILE%\.copilot\extensions\keyboard-2048`
 (or the `extensions` folder under `COPILOT_HOME`, if configured).
