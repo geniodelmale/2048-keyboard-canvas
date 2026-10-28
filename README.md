@@ -1,5 +1,23 @@
 # 2048 Canvas for GitHub Copilot Desktop
 
+## Introduction
+
+A personal extension with no external dependencies, featuring a 4 x 4 board,
+2048 rules, keyboard shortcuts, on-screen controls, and swipe gestures.
+Reaching 2048 does not end the game.
+
+When no moves remain, a large **GAME OVER!** message appears over the tiles.
+Undo or a new game removes the message as soon as the game is playable again;
+the controls always remain accessible.
+
+The tile spawned after each valid move has a highlighted border, a **NEW**
+badge, and a brief animation. The indicator stays until the next valid move,
+even after reloading the canvas. Undo and a new game clear it.
+Moved or merged tiles do not receive this highlight.
+Older saves remain compatible; the indicator will appear after the first
+new move. With reduced motion enabled, the border and badge remain visible
+without animation.
+
 ## Quick install from URL
 
 Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3d9feba8b53e5cceb7e86570de26d5):
@@ -18,24 +36,6 @@ Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3
    ![Gist URL installation dialog in GitHub Copilot Desktop](docs/images/gist.png)
 
 5. After installation, in the Chat ask: **Open the keyboard-2048 canvas**.
-
-## Introduction
-
-A personal extension with no external dependencies, featuring a 4 x 4 board,
-2048 rules, keyboard shortcuts, on-screen controls, and swipe gestures.
-Reaching 2048 does not end the game.
-
-When no moves remain, a large **GAME OVER!** message appears over the tiles.
-Undo or a new game removes the message as soon as the game is playable again;
-the controls always remain accessible.
-
-The tile spawned after each valid move has a highlighted border, a **NEW**
-badge, and a brief animation. The indicator stays until the next valid move,
-even after reloading the canvas. Undo and a new game clear it.
-Moved or merged tiles do not receive this highlight.
-Older saves remain compatible; the indicator will appear after the first
-new move. With reduced motion enabled, the border and badge remain visible
-without animation.
 
 ## Manual Installation
 
