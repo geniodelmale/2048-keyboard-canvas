@@ -14,8 +14,10 @@ Install using the [2048 extension gist](https://gist.github.com/geniodelmale/3f3
    ![Add menu showing Canvas from URL in GitHub Copilot Desktop](docs/images/add.png)
 
 4. Paste `https://gist.github.com/geniodelmale/3f3d9feba8b53e5cceb7e86570de26d5`.
-5. Choose the personal/user scope when prompted.
-6. After installation, ask: **Open the keyboard-2048 canvas**.
+
+   ![Gist URL installation dialog in GitHub Copilot Desktop](docs/images/gist.png)
+
+5. After installation, ask: **Open the keyboard-2048 canvas**.
 
 ## Introduction
 
