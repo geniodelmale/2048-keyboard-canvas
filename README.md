@@ -6,6 +6,8 @@ A personal extension with no external dependencies, featuring a 4 x 4 board,
 2048 rules, keyboard shortcuts, on-screen controls, and swipe gestures.
 Reaching 2048 does not end the game.
 
+![2048 canvas running in GitHub Copilot Desktop](docs/images/2048.png)
+
 When no moves remain, a large **GAME OVER!** message appears over the tiles.
 Undo or a new game removes the message as soon as the game is playable again;
 the controls always remain accessible.
