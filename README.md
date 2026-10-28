@@ -46,7 +46,7 @@ Copy this folder to `%USERPROFILE%\.copilot\extensions\keyboard-2048`
 The entry point must remain `extension.mjs`.
 
 Reload extensions from the runtime, if available, or open a new chat in
-Copilot Desktop. Ask: **Open the keyboard-2048 canvas**.
+Copilot Desktop. Ask: **Open the keyboard-2048 canvas** or simply **Open 2048**.
 No `npm install`, external server, or additional account is required:
 Copilot resolves `@github/copilot-sdk/extension` automatically.
 
