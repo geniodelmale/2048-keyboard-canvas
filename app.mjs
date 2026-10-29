@@ -9,6 +9,12 @@ let state;
 let pending = Promise.resolve();
 let connected = false;
 let storageError = false;
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+const animations = new Set();
+const motionLayer = document.createElement("div");
+motionLayer.className = "motion-layer";
+motionLayer.setAttribute("aria-hidden", "true");
+board.parentElement.append(motionLayer);
 const cells = Array.from({ length: 16 }, () => {
     const cell = document.createElement("div");
     cell.className = "tile";
@@ -21,12 +27,72 @@ function showError(message) {
     errorBox.hidden = false;
 }
 
+function clearMotion() {
+    for (const animation of animations) {
+        animation.onfinish = null;
+        animation.cancel();
+    }
+    animations.clear();
+    motionLayer.replaceChildren();
+    cells.forEach(cell => cell.classList.remove("in-flight"));
+}
+
+function animateMove(motion) {
+    const merged = new Set(motion.merges);
+    const moving = motion.movements.filter(tile => tile.from !== tile.to || merged.has(tile.to));
+    if (!moving.length) return;
+    // Layout offsets exclude the spawn/pulse transforms on the final board.
+    const rects = cells.map(cell => ({
+        left: cell.offsetLeft, top: cell.offsetTop,
+        width: cell.offsetWidth, height: cell.offsetHeight,
+    }));
+    const arrivals = new Set(moving.map(tile => tile.to));
+    arrivals.forEach(index => cells[index].classList.add("in-flight"));
+    let remaining = moving.length;
+    for (const tile of moving) {
+        const source = rects[tile.from];
+        const target = rects[tile.to];
+        const ghost = document.createElement("div");
+        ghost.className = `tile motion-tile${tile.value >= 1024 ? " large" : ""}`;
+        ghost.dataset.level = Math.min(11, Math.log2(tile.value));
+        ghost.textContent = tile.value;
+        Object.assign(ghost.style, {
+            left: `${source.left}px`, top: `${source.top}px`,
+            width: `${source.width}px`, height: `${source.height}px`,
+        });
+        motionLayer.append(ghost);
+        const animation = ghost.animate([
+            { transform: "translate(0, 0)" },
+            { transform: `translate(${target.left - source.left}px, ${target.top - source.top}px)` },
+        ], { duration: 120, easing: "ease-out", fill: "forwards" });
+        animations.add(animation);
+        animation.onfinish = () => {
+            if (--remaining) return;
+            clearMotion();
+            for (const index of merged) {
+                const pulse = cells[index].animate([
+                    { transform: "scale(1)" }, { transform: "scale(1.08)" }, { transform: "scale(1)" },
+                ], { duration: 100, easing: "ease-out" });
+                animations.add(pulse);
+                pulse.onfinish = () => { animations.delete(pulse); pulse.cancel(); };
+            }
+        };
+    }
+}
+
 function render(next) {
+    // SSE and HTTP can deliver the same update, or an older HTTP reply after newer SSE.
+    if (state?.update && next.update?.stream === state.update.stream
+        && next.update.revision <= state.update.revision) return;
+    const motion = state?.update && next.update?.stream === state.update.stream
+        && next.update.revision === state.update.revision + 1
+        && next.update.motion?.from.every((value, index) => value === state.board[index])
+        ? next.update.motion : null;
+    clearMotion();
     cells.forEach((cell, index) => {
         const value = next.board[index];
         const spawned = value && index === next.spawnedIndex;
         cell.className = `tile${value >= 1024 ? " large" : ""}`;
-        if (value && state && value !== state.board[index]) cell.classList.add("changed");
         if (spawned) cell.classList.add("spawned");
         cell.dataset.level = value ? Math.min(11, Math.log2(value)) : 0;
         cell.textContent = value || "";
@@ -41,7 +107,11 @@ function render(next) {
     document.querySelector("#game-over").hidden = !next.gameOver;
     undoButton.disabled = !next.canUndo;
     state = next;
+    if (motion && !reducedMotion.matches) animateMove(motion);
 }
+
+reducedMotion.addEventListener("change", clearMotion);
+window.addEventListener("resize", clearMotion);
 
 function command(action, direction) {
     pending = pending.then(async () => {
@@ -135,5 +205,5 @@ events.addEventListener("error", () => {
     connected = false;
     showError("Connection lost. Reconnecting automatically; your game is still saved.");
 });
-window.addEventListener("pagehide", () => events.close());
+window.addEventListener("pagehide", () => { clearMotion(); events.close(); });
 board.focus({ preventScroll: true });

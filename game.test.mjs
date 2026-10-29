@@ -33,8 +33,54 @@ test("slides preserve mass and do not mutate their inputs", () => {
             assert.equal(result.board.reduce((a, b) => a + b), board.reduce((a, b) => a + b));
             assert.deepEqual(board, original);
             assert.equal(result.changed, result.board.some((value, i) => value !== board[i]));
+            assert.deepEqual(result.movements.map(tile => tile.from).sort((a, b) => a - b),
+                board.flatMap((value, index) => value ? [index] : []));
+            const reconstructed = Array(16).fill(0);
+            for (const tile of result.movements) {
+                assert.equal(tile.value, board[tile.from]);
+                reconstructed[tile.to] += tile.value;
+                if (direction === "left" || direction === "right") {
+                    assert.equal(Math.floor(tile.from / 4), Math.floor(tile.to / 4));
+                    assert.ok(direction === "left" ? tile.to <= tile.from : tile.to >= tile.from);
+                } else {
+                    assert.equal(tile.from % 4, tile.to % 4);
+                    assert.ok(direction === "up" ? tile.to <= tile.from : tile.to >= tile.from);
+                }
+            }
+            assert.deepEqual(reconstructed, result.board);
+            assert.equal(result.score, result.merges.reduce((sum, index) => sum + result.board[index], 0));
+            for (let index = 0; index < 16; index++) {
+                const sources = result.movements.filter(tile => tile.to === index);
+                assert.ok(sources.length <= 2);
+                assert.equal(result.merges.includes(index), sources.length === 2);
+                if (sources.length === 2) assert.equal(sources[0].value, sources[1].value);
+            }
         }
     }
+});
+
+test("movement traces track equal-valued cells and prevent chain merges", () => {
+    const result = slide([2, 0, 2, 4, ...Array(12).fill(0)], "left");
+    assert.deepEqual(result.movements, [
+        { from: 0, to: 0, value: 2 },
+        { from: 2, to: 0, value: 2 },
+        { from: 3, to: 1, value: 4 },
+    ]);
+    assert.deepEqual(result.merges, [0]);
+    assert.deepEqual(result.board.slice(0, 4), [4, 4, 0, 0]);
+    const pairs = slide([2, 2, 2, 2, ...Array(12).fill(0)], "right");
+    assert.deepEqual(pairs.movements, [
+        { from: 3, to: 3, value: 2 }, { from: 2, to: 3, value: 2 },
+        { from: 1, to: 2, value: 2 }, { from: 0, to: 2, value: 2 },
+    ]);
+    assert.deepEqual(pairs.merges, [3, 2]);
+    const unchangedCell = slide([2, 2, ...Array(14).fill(0)], "right");
+    assert.equal(unchangedCell.board[0], 0);
+    assert.deepEqual(unchangedCell.movements.map(tile => tile.to), [3, 3]);
+    const noOp = slide([2, ...Array(15).fill(0)], "left");
+    assert.equal(noOp.changed, false);
+    assert.deepEqual(noOp.movements, [{ from: 0, to: 0, value: 2 }]);
+    assert.deepEqual(noOp.merges, []);
 });
 
 test("new game spawns exactly two tiles, with both spawn values supported", () => {
@@ -137,6 +183,31 @@ test("spawn metadata identifies only the random tile, not a merged tile", () => 
     const four = move(stateWith([2, ...Array(15).fill(0)]), "right", () => .99);
     assert.equal(four.spawnedIndex, 15);
     assert.equal(four.board[15], 4);
+});
+
+test("spawning uses every empty cell regardless of direction and preserves the 90/10 RNG threshold", () => {
+    const board = Array(16).fill(0);
+    board[5] = 2;
+    for (const direction of DIRECTIONS) {
+        const state = stateWith(board);
+        const shifted = slide(board, direction);
+        const empty = shifted.board.flatMap((value, index) => value === 0 ? [index] : []);
+        for (let slot = 0; slot < empty.length; slot++) {
+            for (const [roll, value] of [[0, 2], [0.899999, 2], [0.9, 4], [0.999999, 4]]) {
+                const rolls = [(slot + 0.5) / empty.length, roll];
+                let calls = 0;
+                const after = move(state, direction, () => {
+                    assert.ok(calls < 2, "a valid move makes exactly two RNG calls");
+                    return rolls[calls++];
+                });
+                assert.equal(calls, 2);
+                assert.equal(after.spawnedIndex, empty[slot]);
+                assert.equal(after.board[empty[slot]], value);
+                assert.deepEqual(after.board.filter((_, index) => index !== empty[slot]),
+                    shifted.board.filter((_, index) => index !== empty[slot]));
+            }
+        }
+    }
 });
 
 test("spawn metadata persists without rejecting saves made before this feature", () => {

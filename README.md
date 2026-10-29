@@ -12,6 +12,15 @@ When no moves remain, a large **GAME OVER!** message appears over the tiles.
 Undo or a new game removes the message as soon as the game is playable again;
 the controls always remain accessible.
 
+Tiles slide in their actual direction for 120 ms, followed by a subtle
+100 ms pulse on merged tiles. New input immediately replaces any unfinished
+animation; gameplay never waits for animations. Reduced motion disables
+slides and merge pulses. Animation data is temporary and is not saved.
+Each valid move still spawns a tile in a uniformly random empty cell:
+90% chance of a 2 and 10% chance of a 4, independent of movement direction.
+After updating an already-running extension, reload the extension provider
+(or open a new chat) and reopen the canvas to enable movement tracking.
+
 The tile spawned after each valid move has a highlighted border, a **NEW**
 badge, and a brief animation. The indicator stays until the next valid move,
 even after reloading the canvas. Undo and a new game clear it.

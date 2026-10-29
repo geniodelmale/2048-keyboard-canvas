@@ -20,12 +20,50 @@ test("state and one-level Undo survive provider restart", async t => {
     const before = store.snapshot();
     await store.execute("move", movable(before));
     const restored = await createGameStore(file);
-    assert.deepEqual(restored.snapshot(), store.snapshot());
+    const { update: restoredUpdate, ...restoredGame } = restored.snapshot();
+    const { update: originalUpdate, ...originalGame } = store.snapshot();
+    assert.deepEqual(restoredGame, originalGame);
+    assert.equal(restoredUpdate.motion, null);
+    assert.notEqual(restoredUpdate.stream, originalUpdate.stream);
     const undone = await restored.execute("undo");
     assert.deepEqual(undone.board, before.board);
     assert.equal(undone.score, before.score);
     assert.equal(undone.moves, before.moves);
     assert.equal(undone.canUndo, false);
+});
+
+test("animation updates are ephemeral, ordered, and identical for all panels and replies", async t => {
+    const { file } = await fixture(t);
+    const initial = { ...newGame(), board: [2, 2, 4, ...Array(13).fill(0)] };
+    await writeFile(file, JSON.stringify(initial));
+    const store = await createGameStore(file);
+    const firstPanel = [];
+    const secondPanel = [];
+    store.subscribe(state => firstPanel.push(state));
+    store.subscribe(state => secondPanel.push(state));
+    const before = store.snapshot();
+    const plan = slide(before.board, "left");
+    const moved = await store.execute("move", "left");
+    assert.equal(moved.update.stream, before.update.stream);
+    assert.equal(moved.update.revision, before.update.revision + 1);
+    assert.deepEqual(moved.update.motion, {
+        from: before.board, movements: plan.movements, merges: plan.merges,
+    });
+    assert.deepEqual(firstPanel, [moved]);
+    assert.deepEqual(secondPanel, [moved]);
+    assert.deepEqual(store.snapshot(), moved);
+    const saved = JSON.parse(await readFile(file, "utf8"));
+    assert.equal("update" in saved, false);
+    assert.equal("motion" in saved, false);
+    const undone = await store.execute("undo");
+    assert.equal(undone.update.revision, moved.update.revision + 1);
+    assert.equal(undone.update.motion, null);
+    assert.deepEqual(undone.board, initial.board);
+    const repeatedUndo = await store.execute("undo");
+    assert.deepEqual(repeatedUndo, undone);
+    const fresh = await store.execute("new");
+    assert.equal(fresh.update.revision, undone.update.revision + 1);
+    assert.equal(fresh.update.motion, null);
 });
 
 test("new game clears Undo and keeps record", async t => {
@@ -117,6 +155,7 @@ test("loopback server serves UI and authenticated actions with live panel update
     assert.equal(moved.moves, before.moves + 1);
     const update = new TextDecoder().decode((await reader.read()).value);
     assert.match(update, /"canUndo":true/);
+    assert.deepEqual(JSON.parse(update.trim().slice("data: ".length)), moved);
     const undone = await (await send({ action: "undo" })).json();
     assert.deepEqual(undone.board, before.board);
     assert.equal(undone.canUndo, false);

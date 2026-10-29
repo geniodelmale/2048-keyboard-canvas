@@ -1,25 +1,38 @@
 export const DIRECTIONS = ["left", "right", "up", "down"];
 
-export function mergeLine(line) {
-    const values = line.filter(value => value !== 0);
+function traceLine(line) {
+    const values = line.flatMap((value, from) => value ? [{ value, from }] : []);
     const merged = [];
+    const movements = [];
+    const merges = [];
     let score = 0;
     for (let i = 0; i < values.length; i++) {
-        if (values[i] === values[i + 1]) {
-            const value = values[i] * 2;
+        const to = merged.length;
+        movements.push({ from: values[i].from, to, value: values[i].value });
+        if (values[i].value === values[i + 1]?.value) {
+            const value = values[i].value * 2;
+            movements.push({ from: values[i + 1].from, to, value: values[i + 1].value });
+            merges.push(to);
             merged.push(value);
             score += value;
             i++;
         } else {
-            merged.push(values[i]);
+            merged.push(values[i].value);
         }
     }
-    return { line: merged.concat(Array(4 - merged.length).fill(0)), score };
+    return { line: merged.concat(Array(4 - merged.length).fill(0)), score, movements, merges };
+}
+
+export function mergeLine(line) {
+    const { line: merged, score } = traceLine(line);
+    return { line: merged, score };
 }
 
 export function slide(board, direction) {
     if (!DIRECTIONS.includes(direction)) throw new Error("Invalid direction.");
     const next = [...board];
+    const movements = [];
+    const merges = [];
     let score = 0;
     for (let row = 0; row < 4; row++) {
         const indices = Array.from({ length: 4 }, (_, column) => {
@@ -28,11 +41,15 @@ export function slide(board, direction) {
             if (direction === "up") return column * 4 + row;
             return (3 - column) * 4 + row;
         });
-        const result = mergeLine(indices.map(index => board[index]));
+        const result = traceLine(indices.map(index => board[index]));
         indices.forEach((index, column) => { next[index] = result.line[column]; });
+        movements.push(...result.movements.map(tile => ({
+            ...tile, from: indices[tile.from], to: indices[tile.to],
+        })));
+        merges.push(...result.merges.map(column => indices[column]));
         score += result.score;
     }
-    return { board: next, score, changed: next.some((value, index) => value !== board[index]) };
+    return { board: next, score, changed: next.some((value, index) => value !== board[index]), movements, merges };
 }
 
 function spawn(board, random) {

@@ -3,7 +3,7 @@ import { readFile, mkdir, rename, writeFile, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
-import { DIRECTIONS, move, newGame, undo, validateSave, viewState } from "./game.mjs";
+import { DIRECTIONS, move, newGame, slide, undo, validateSave, viewState } from "./game.mjs";
 
 const assets = new Map([
     ["/", ["index.html", "text/html; charset=utf-8"]],
@@ -21,6 +21,9 @@ export async function createGameStore(savePath) {
         state = newGame();
     }
     let queue = Promise.resolve();
+    const stream = randomUUID();
+    let update = { stream, revision: 0, motion: null };
+    const snapshot = () => ({ ...viewState(state), update });
     const listeners = new Set();
     async function persist(next) {
         await mkdir(dirname(savePath), { recursive: true });
@@ -34,7 +37,7 @@ export async function createGameStore(savePath) {
     }
     await persist(state);
     return {
-        snapshot: () => viewState(state),
+        snapshot,
         subscribe(listener) {
             listeners.add(listener);
             return () => listeners.delete(listener);
@@ -47,11 +50,21 @@ export async function createGameStore(savePath) {
                 else if (action === "new") next = newGame(state.best);
                 else throw new Error("Invalid command.");
                 if (next !== state) {
+                    const motion = action === "move" ? slide(state.board, direction) : null;
                     await persist(next);
+                    update = {
+                        stream,
+                        revision: update.revision + 1,
+                        motion: motion ? {
+                            from: state.board,
+                            movements: motion.movements,
+                            merges: motion.merges,
+                        } : null,
+                    };
                     state = next;
-                    for (const listener of listeners) listener(viewState(state));
+                    for (const listener of listeners) listener(snapshot());
                 }
-                return viewState(state);
+                return snapshot();
             });
             // A failed write is returned to its caller, without poisoning the command queue.
             queue = result.then(() => undefined, () => undefined);
