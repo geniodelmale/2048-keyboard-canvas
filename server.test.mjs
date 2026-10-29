@@ -84,6 +84,7 @@ test("loopback server serves UI and authenticated actions with live panel update
     assert.match(html, /aria-label="Move up"/);
     assert.match(html, /New game/);
     assert.match(html, /GAME OVER!/);
+    assert.match(html, /<p class="intro">Use arrows or WASD to move tiles\.<br>Merge equal tiles to reach <strong>2048<\/strong>\.<\/p>/);
     for (const path of ["/app.mjs", "/style.css"]) {
         assert.equal((await fetch(endpoint(path))).status, 200);
     }
